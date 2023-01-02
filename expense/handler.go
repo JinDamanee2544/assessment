@@ -20,11 +20,15 @@ type Error struct {
 }
 
 func PostExpense(c echo.Context) error {
+
 	e := Expense{}
+
+	if c.Request().ContentLength == 0 {
+		return c.JSON(http.StatusBadRequest, Error{Message: "No body found"})
+	}
 
 	var err error
 	err = c.Bind(&e)
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Error{Message: err.Error()})
 	}
@@ -39,6 +43,7 @@ func PostExpense(c echo.Context) error {
 	return c.JSON(http.StatusCreated, e)
 }
 
+// For testing purpose
 func GetAllExpense(c echo.Context) error {
 	rows, err := db.Query("SELECT * FROM expenses")
 

@@ -67,3 +67,14 @@ func TestPostExpense(t *testing.T) {
 	assert.EqualValues(t, "night market promotion discount 10 bath", e.Note)
 	assert.EqualValues(t, []string{"food", "beverage"}, e.Tags)
 }
+
+func TestPostExpenseNoBody(t *testing.T) {
+	body := bytes.NewBufferString("")
+
+	e := Expense{}
+	res := request(http.MethodPost, uri("expenses"), body)
+	err := res.Decode(&e)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusBadRequest, res.StatusCode)
+}
