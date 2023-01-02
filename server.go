@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/JinDamanee2544/assessment/expense"
 )
 
 func main() {
-	fmt.Println("Please use server.go for main file")
-	fmt.Println("start at port:", os.Getenv("PORT"))
+
+	expense.InitDB()
 
 	e := echo.New()
 
@@ -19,10 +21,13 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/", func(c echo.Context) error {
-		return c.String(200, "Hello, World!")
-	})
+	e.POST("/expenses", expense.PostExpense)
+	e.GET("/expenses", expense.GetAllExpense)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":2565"))
+	if os.Getenv("PORT") == "" {
+		log.Fatal("$PORT must be set")
+	}
+
+	e.Logger.Fatal(e.Start(os.Getenv("PORT")))
 }
