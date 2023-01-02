@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 
@@ -18,7 +17,7 @@ type Response struct {
 }
 
 func uri(paths ...string) string {
-	host := "http://localhost" + os.Getenv("PORT")
+	host := "http://localhost:2565"
 
 	if paths == nil {
 		return host
@@ -32,7 +31,6 @@ func uri(paths ...string) string {
 func request(method, url string, body io.Reader) *Response {
 	req, _ := http.NewRequest(method, url, body)
 
-	req.Header.Set("Authorization", os.Getenv("AUTH"))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -49,16 +47,15 @@ func (r *Response) Decode(v interface{}) error {
 }
 
 func TestPostExpense(t *testing.T) {
-	e := Expense{}
-
 	body := bytes.NewBufferString(`{
 		"id": "1",
 		"title": "strawberry smoothie",
 		"amount": 79,
 		"note": "night market promotion discount 10 bath", 
 		"tags": ["food", "beverage"]
-	}`)
+		}`)
 
+	e := Expense{}
 	res := request(http.MethodPost, uri("expenses"), body)
 	err := res.Decode(&e)
 
