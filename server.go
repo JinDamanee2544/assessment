@@ -22,6 +22,7 @@ func main() {
 
 	// Routes
 	e.POST("/expenses", expense.PostExpense)
+	e.GET("/expenses", expense.GetAllExpense)
 
 	// Start server
 	if os.Getenv("PORT") == "" {
