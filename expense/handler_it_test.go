@@ -46,7 +46,7 @@ func (r *Response) Decode(v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
-func TestPostExpense(t *testing.T) {
+func TestPostExpenseIT(t *testing.T) {
 	body := bytes.NewBufferString(`{
 		"id": "1",
 		"title": "strawberry smoothie",
@@ -68,7 +68,7 @@ func TestPostExpense(t *testing.T) {
 	assert.EqualValues(t, []string{"food", "beverage"}, e.Tags)
 }
 
-func TestPostExpenseNoBody(t *testing.T) {
+func TestPostExpenseNoBodyIT(t *testing.T) {
 	body := bytes.NewBufferString("")
 
 	e := Expense{}
