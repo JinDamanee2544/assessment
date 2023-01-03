@@ -13,7 +13,8 @@ import (
 
 // with http/test
 func TestPostExpense(t *testing.T) {
-	body := bytes.NewBufferString(`{
+	body := bytes.NewBufferString(
+		`{
 		"title": "strawberry smoothie C++",
 		"amount": 79,
 		"note": "night market promotion discount 10 bath",
@@ -21,15 +22,18 @@ func TestPostExpense(t *testing.T) {
 	}`)
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "http://localhost:2565/expense", body)
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	req, err := http.NewRequest(http.MethodPost, "/", body)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	req.Header.Set("Content-Type", "application/json")
 
 	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
 
-	err := PostExpense(c)
+	e.POST("/", PostExpense)
 
-	assert.Nil(t, err)
+	e.ServeHTTP(rec, req)
+
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
 	ex := Expense{}
