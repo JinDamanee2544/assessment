@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 
@@ -34,6 +36,12 @@ func request(method, url string, body io.Reader) *Response {
 	req, _ := http.NewRequest(method, url, body)
 
 	req.Header.Set("Content-Type", "application/json")
+
+	token := os.Getenv("TOKEN")
+	if token == "" {
+		log.Fatal("TOKEN is not set")
+	}
+	req.Header.Set("Authorization", os.Getenv("TOKEN"))
 
 	client := &http.Client{}
 	res, err := client.Do(req)
