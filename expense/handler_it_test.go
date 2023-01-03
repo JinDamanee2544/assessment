@@ -114,3 +114,27 @@ func TestITGetExpenseByID(t *testing.T) {
 	assert.EqualValues(t, insertE.Note, e.Note)
 	assert.EqualValues(t, insertE.Tags, e.Tags)
 }
+
+func TestITUpdateExpenseByID(t *testing.T) {
+	body := bytes.NewBufferString(`{
+		"title": "apple smoothie",
+		"amount": 89,
+		"note": "no discount",
+		"tags": ["beverage"]
+	}`)
+
+	insertE := seedExpense()
+
+	res := request(http.MethodPut, uri("expenses", insertE.ID), body)
+
+	editedEx := Expense{}
+	err := res.Decode(&editedEx)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, res.StatusCode)
+	assert.EqualValues(t, insertE.ID, editedEx.ID)
+	assert.EqualValues(t, "apple smoothie", editedEx.Title)
+	assert.EqualValues(t, 89, editedEx.Amount)
+	assert.EqualValues(t, "no discount", editedEx.Note)
+	assert.EqualValues(t, []string{"beverage"}, editedEx.Tags)
+}

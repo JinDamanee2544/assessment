@@ -77,3 +77,22 @@ func GetExpenseByID(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, e)
 }
+
+func UpdateExpenseByID(c echo.Context) error {
+	id := c.Param("id")
+
+	e := Expense{}
+	err := c.Bind(&e)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Error{Message: err.Error()})
+	}
+
+	row := db.QueryRow("UPDATE expenses SET title = $1, amount = $2, note = $3, tags = $4 WHERE id = $5 RETURNING id", e.Title, e.Amount, e.Note, pq.Array(&e.Tags), id)
+
+	err = row.Scan(&e.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, e)
+}
