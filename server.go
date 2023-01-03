@@ -21,8 +21,9 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.POST("/expenses", expense.PostExpense)
+	e.POST("/expenses", expense.CreateExpense)
 	e.GET("/expenses", expense.GetAllExpense)
+	e.GET("/expenses/:id", expense.GetExpenseByID)
 
 	// Start server
 	if os.Getenv("PORT") == "" {
