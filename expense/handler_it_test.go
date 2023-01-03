@@ -48,7 +48,7 @@ func (r *Response) Decode(v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
-func seedExpense() Expense {
+func seedExpense() *Expense {
 	body := bytes.NewBufferString(`{
 		"title": "strawberry smoothie",
 		"amount": 89,
@@ -62,7 +62,7 @@ func seedExpense() Expense {
 	if err != nil {
 		panic(err)
 	}
-	return e
+	return &e
 }
 
 func TestITPostExpense(t *testing.T) {
