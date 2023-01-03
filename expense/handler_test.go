@@ -13,6 +13,7 @@ import (
 
 // with http/test
 func TestPostExpense(t *testing.T) {
+	InitDB()
 	body := bytes.NewBufferString(
 		`{
 		"title": "strawberry smoothie C++",
@@ -41,7 +42,7 @@ func TestPostExpense(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, "1", ex.ID)
-	assert.Equal(t, "strawberry smoothie", ex.Title)
+	assert.Equal(t, "strawberry smoothie C++", ex.Title)
 	assert.Equal(t, 79, ex.Amount)
 	assert.Equal(t, "night market promotion discount 10 bath", ex.Note)
 	assert.Equal(t, []string{"food", "beverage"}, ex.Tags)
