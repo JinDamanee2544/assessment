@@ -24,6 +24,7 @@ func main() {
 	e.POST("/expenses", expense.CreateExpense)
 	e.GET("/expenses", expense.GetAllExpense)
 	e.GET("/expenses/:id", expense.GetExpenseByID)
+	e.PUT("/expenses/:id", expense.UpdateExpenseByID)
 
 	// Start server
 	if os.Getenv("PORT") == "" {
