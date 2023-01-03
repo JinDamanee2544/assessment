@@ -65,7 +65,7 @@ func seedExpense() Expense {
 	return e
 }
 
-func TestPostExpenseIT(t *testing.T) {
+func TestITPostExpense(t *testing.T) {
 	body := bytes.NewBufferString(`{
 		"id": "1",
 		"title": "strawberry smoothie",
@@ -87,7 +87,7 @@ func TestPostExpenseIT(t *testing.T) {
 	assert.EqualValues(t, []string{"food", "beverage"}, e.Tags)
 }
 
-func TestPostExpenseNoBodyIT(t *testing.T) {
+func TestITPostExpenseNoBody(t *testing.T) {
 	body := bytes.NewBufferString("")
 
 	e := Expense{}
@@ -98,7 +98,7 @@ func TestPostExpenseNoBodyIT(t *testing.T) {
 	assert.EqualValues(t, http.StatusBadRequest, res.StatusCode)
 }
 
-func TestGetExpenseByIDIT(t *testing.T) {
+func TestITGetExpenseByID(t *testing.T) {
 	insertE := seedExpense()
 
 	res := request(http.MethodGet, uri("expenses", insertE.ID), nil)
