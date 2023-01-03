@@ -48,6 +48,23 @@ func (r *Response) Decode(v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
+func seedExpense() Expense {
+	body := bytes.NewBufferString(`{
+		"title": "strawberry smoothie",
+		"amount": 89,
+		"note": "night market promotion discount 10 bath", 
+		"tags": ["food", "beverage"]
+		}`)
+
+	e := Expense{}
+	res := request(http.MethodPost, uri("expenses"), body)
+	err := res.Decode(&e)
+	if err != nil {
+		panic(err)
+	}
+	return e
+}
+
 func TestPostExpenseIT(t *testing.T) {
 	body := bytes.NewBufferString(`{
 		"id": "1",
@@ -79,4 +96,21 @@ func TestPostExpenseNoBodyIT(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.EqualValues(t, http.StatusBadRequest, res.StatusCode)
+}
+
+func TestGetExpenseByIDIT(t *testing.T) {
+	insertE := seedExpense()
+
+	res := request(http.MethodGet, uri("expenses", insertE.ID), nil)
+
+	e := Expense{}
+	err := res.Decode(&e)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, res.StatusCode)
+	assert.EqualValues(t, insertE.ID, e.ID)
+	assert.EqualValues(t, insertE.Title, e.Title)
+	assert.EqualValues(t, insertE.Amount, e.Amount)
+	assert.EqualValues(t, insertE.Note, e.Note)
+	assert.EqualValues(t, insertE.Tags, e.Tags)
 }

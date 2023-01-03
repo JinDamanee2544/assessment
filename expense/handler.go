@@ -20,14 +20,12 @@ type Error struct {
 }
 
 func CreateExpense(c echo.Context) error {
-
-	e := Expense{}
-
 	if c.Request().ContentLength == 0 {
 		return c.JSON(http.StatusBadRequest, Error{Message: "No body found"})
 	}
 
 	var err error
+	e := Expense{}
 	err = c.Bind(&e)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Error{Message: err.Error()})
@@ -64,4 +62,18 @@ func GetAllExpense(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, expenses)
+}
+
+func GetExpenseByID(c echo.Context) error {
+	id := c.Param("id")
+
+	row := db.QueryRow("SELECT * FROM expenses WHERE id = $1", id)
+
+	e := Expense{}
+	err := row.Scan(&e.ID, &e.Title, &e.Amount, &e.Note, pq.Array(&e.Tags))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, e)
 }
