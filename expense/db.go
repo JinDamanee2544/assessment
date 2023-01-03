@@ -8,7 +8,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
+type DB interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+}
+
+var db DB
 
 func InitDB() {
 	url := os.Getenv("DATABASE_URL")
