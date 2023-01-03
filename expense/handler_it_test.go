@@ -138,3 +138,21 @@ func TestITUpdateExpenseByID(t *testing.T) {
 	assert.EqualValues(t, "no discount", editedEx.Note)
 	assert.EqualValues(t, []string{"beverage"}, editedEx.Tags)
 }
+
+func TestGetAllExpenses(t *testing.T) {
+	insertE := seedExpense()
+
+	res := request(http.MethodGet, uri("expenses"), nil)
+
+	e := []Expense{}
+	err := res.Decode(&e)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, res.StatusCode)
+	assert.EqualValues(t, 1, len(e))
+	assert.EqualValues(t, insertE.ID, e[0].ID)
+	assert.EqualValues(t, insertE.Title, e[0].Title)
+	assert.EqualValues(t, insertE.Amount, e[0].Amount)
+	assert.EqualValues(t, insertE.Note, e[0].Note)
+	assert.EqualValues(t, insertE.Tags, e[0].Tags)
+}
