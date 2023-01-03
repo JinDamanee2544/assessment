@@ -21,7 +21,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.POST("/expenses", expense.PostExpense)
+	e.POST("/expenses", expense.CreateExpense)
 	e.GET("/expenses", expense.GetAllExpense)
 
 	// Start server

@@ -19,7 +19,7 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-func PostExpense(c echo.Context) error {
+func CreateExpense(c echo.Context) error {
 
 	e := Expense{}
 
