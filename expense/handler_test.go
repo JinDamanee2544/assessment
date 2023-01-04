@@ -155,7 +155,9 @@ func TestGetExpenseByID(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
 	defer closeDB()
 
-	var seed = Expense{
+	seed := seedExpense(t, mock)
+
+	var want = Expense{
 		ID:     "1",
 		Title:  "strawberry smoothie C++",
 		Amount: 79,
@@ -165,7 +167,8 @@ func TestGetExpenseByID(t *testing.T) {
 
 	sqlGet := sqlCommandMock{
 		sqlCommand: "SELECT * FROM expenses WHERE id = $1",
-		sqlResult:  sqlmock.NewRows([]string{"id", "title", "amount", "note", "tags"}).AddRow(seed.ID, seed.Title, seed.Amount, seed.Note, pq.Array(seed.Tags)),
+		sqlResult: sqlmock.NewRows([]string{"id", "title", "amount", "note", "tags"}).
+			AddRow(want.ID, want.Title, want.Amount, want.Note, pq.Array(want.Tags)),
 	}
 
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGet.sqlCommand)).
@@ -176,7 +179,7 @@ func TestGetExpenseByID(t *testing.T) {
 
 	c, rec := setUpContext(nil)
 	c.SetParamNames("id")
-	c.SetParamValues("1")
+	c.SetParamValues(seed.ID)
 	err := GetExpenseByID(c)
 
 	assert.Nil(t, err)
@@ -204,7 +207,7 @@ func TestUpdateExpenseByID(t *testing.T) {
 	defer closeDB()
 
 	seed := seedExpense(t, mock)
-	_ = seed
+
 	var changeTo = Expense{
 		Title:  "apple smoothie",
 		Amount: 89,
@@ -218,7 +221,7 @@ func TestUpdateExpenseByID(t *testing.T) {
 	}
 
 	mock.ExpectQuery(regexp.QuoteMeta(sqlUpdate.sqlCommand)).
-		WithArgs(changeTo.Title, changeTo.Amount, changeTo.Note, pq.Array(changeTo.Tags), "1").
+		WithArgs(changeTo.Title, changeTo.Amount, changeTo.Note, pq.Array(changeTo.Tags), seed.ID).
 		WillReturnRows(sqlUpdate.sqlResult)
 
 	// ----------------------------
@@ -233,7 +236,7 @@ func TestUpdateExpenseByID(t *testing.T) {
 
 	c, rec := setUpContext(body)
 	c.SetParamNames("id")
-	c.SetParamValues("1")
+	c.SetParamValues(seed.ID)
 	err := UpdateExpenseByID(c)
 
 	assert.Nil(t, err)
