@@ -258,3 +258,51 @@ func TestUpdateExpenseByID(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestGetAllExpense(t *testing.T) {
+	mock, closeDB := InitMockDB(t)
+	defer closeDB()
+
+	seed := seedExpense(t, mock)
+
+	var want = Expense{
+		ID:     "1",
+		Title:  "strawberry smoothie C++",
+		Amount: 79,
+		Note:   "night market promotion discount 10 bath",
+		Tags:   []string{"food", "beverage"},
+	}
+
+	sqlGet := sqlCommandMock{
+		sqlCommand: "SELECT * FROM expenses",
+		sqlResult: sqlmock.NewRows([]string{"id", "title", "amount", "note", "tags"}).
+			AddRow(want.ID, want.Title, want.Amount, want.Note, pq.Array(want.Tags)),
+	}
+
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGet.sqlCommand)).
+		WillReturnRows(sqlGet.sqlResult)
+
+	// ----------------------------
+
+	c, rec := setUpContext(nil)
+	err := GetAllExpense(c)
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var ex []Expense
+	err = json.NewDecoder(rec.Body).Decode(&ex)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, rec.Code)
+	assert.Equal(t, seed.ID, ex[0].ID)
+	assert.Equal(t, seed.Title, ex[0].Title)
+	assert.Equal(t, seed.Amount, ex[0].Amount)
+	assert.Equal(t, seed.Note, ex[0].Note)
+	assert.Equal(t, seed.Tags, ex[0].Tags)
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
