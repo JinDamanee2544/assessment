@@ -151,20 +151,30 @@ func TestITUpdateExpenseByID(t *testing.T) {
 	assert.EqualValues(t, []string{"beverage"}, editedEx.Tags)
 }
 
-// func TestGetAllExpenses(t *testing.T) {
-// 	insertE := seedExpenseIT(t)
+func TestGetAllExpenses(t *testing.T) {
+	insertE, deleteSeed := seedExpenseIT(t)
+	defer deleteSeed()
 
-// 	res := request(http.MethodGet, uri("expenses"), nil)
+	insertE2, deleteSeed2 := seedExpenseIT(t)
+	defer deleteSeed2()
 
-// 	e := []Expense{}
-// 	err := res.Decode(&e)
+	res := request(http.MethodGet, uri("expenses"), nil)
 
-// 	assert.Nil(t, err)
-// 	assert.EqualValues(t, http.StatusOK, res.StatusCode)
-// 	assert.EqualValues(t, 1, len(e))
-// 	assert.EqualValues(t, insertE.ID, e[0].ID)
-// 	assert.EqualValues(t, insertE.Title, e[0].Title)
-// 	assert.EqualValues(t, insertE.Amount, e[0].Amount)
-// 	assert.EqualValues(t, insertE.Note, e[0].Note)
-// 	assert.EqualValues(t, insertE.Tags, e[0].Tags)
-// }
+	e := []Expense{}
+	err := res.Decode(&e)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, res.StatusCode)
+	assert.EqualValues(t, 2, len(e))
+	assert.EqualValues(t, insertE.ID, e[0].ID)
+	assert.EqualValues(t, insertE.Title, e[0].Title)
+	assert.EqualValues(t, insertE.Amount, e[0].Amount)
+	assert.EqualValues(t, insertE.Note, e[0].Note)
+	assert.EqualValues(t, insertE.Tags, e[0].Tags)
+
+	assert.EqualValues(t, insertE2.ID, e[1].ID)
+	assert.EqualValues(t, insertE2.Title, e[1].Title)
+	assert.EqualValues(t, insertE2.Amount, e[1].Amount)
+	assert.EqualValues(t, insertE2.Note, e[1].Note)
+	assert.EqualValues(t, insertE2.Tags, e[1].Tags)
+}
