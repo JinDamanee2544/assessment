@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -49,5 +52,21 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
-	e.Logger.Fatal(e.Start(os.Getenv("PORT")))
+	go func() {
+		e.Logger.Fatal(e.Start(os.Getenv("PORT")))
+	}()
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt)
+
+	// Wait for interrupt signal
+	<-shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := e.Shutdown(ctx)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	log.Println("Shutting down server...")
 }
