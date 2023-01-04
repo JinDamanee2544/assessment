@@ -29,6 +29,24 @@ func InitMockDB(t *testing.T) (sqlmock.Sqlmock, func()) {
 	return mock, closeDB
 }
 
+type sqlCommandMock struct {
+	sqlCommand string
+	sqlResult  *sqlmock.Rows
+}
+
+func setUpContext(body *bytes.Buffer) (echo.Context, *httptest.ResponseRecorder) {
+	rec := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodPost, "/expense", body)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", os.Getenv("TOKEN"))
+
+	e := echo.New()
+	c := e.NewContext(req, rec)
+
+	return c, rec
+}
+
 // with http/test
 func TestCreateExpense(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
@@ -41,11 +59,14 @@ func TestCreateExpense(t *testing.T) {
 		Tags:   []string{"food", "beverage"},
 	}
 
-	sqlCreate := "INSERT INTO expenses (title, amount, note, tags) VALUES ($1, $2, $3, $4) RETURNING id"
-	sqlResult := sqlmock.NewRows([]string{"id"}).AddRow(1)
-	mock.ExpectQuery(regexp.QuoteMeta(sqlCreate)).
+	sqlCreate := sqlCommandMock{
+		sqlCommand: "INSERT INTO expenses (title, amount, note, tags) VALUES ($1, $2, $3, $4) RETURNING id",
+		sqlResult:  sqlmock.NewRows([]string{"id"}).AddRow(1),
+	}
+
+	mock.ExpectQuery(regexp.QuoteMeta(sqlCreate.sqlCommand)).
 		WithArgs(seed.Title, seed.Amount, seed.Note, pq.Array(seed.Tags)).
-		WillReturnRows((sqlResult))
+		WillReturnRows(sqlCreate.sqlResult)
 
 	// ----------------------------
 
@@ -56,14 +77,8 @@ func TestCreateExpense(t *testing.T) {
 		"note": "night market promotion discount 10 bath",
 		"tags": ["food", "beverage"]
 	}`)
-	rec := httptest.NewRecorder()
 
-	req := httptest.NewRequest(http.MethodPost, "/expense", body)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", os.Getenv("TOKEN"))
-
-	e := echo.New()
-	c := e.NewContext(req, rec)
+	c, rec := setUpContext(body)
 	err := CreateExpense(c)
 
 	assert.Nil(t, err)
@@ -79,4 +94,9 @@ func TestCreateExpense(t *testing.T) {
 	assert.Equal(t, seed.Amount, ex.Amount)
 	assert.Equal(t, seed.Note, ex.Note)
 	assert.Equal(t, seed.Tags, ex.Tags)
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
 }

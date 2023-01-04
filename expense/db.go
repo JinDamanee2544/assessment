@@ -14,7 +14,7 @@ type DB interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
 }
 
-var db *sql.DB
+var db DB
 
 func InitDB() {
 	url := os.Getenv("DATABASE_URL")
@@ -42,6 +42,6 @@ func InitDB() {
 	}
 }
 
-func setMockDB(mockDB *sql.DB) {
+func setMockDB(mockDB DB) {
 	db = mockDB
 }
