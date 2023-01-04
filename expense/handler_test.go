@@ -3,6 +3,7 @@ package expense
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -34,10 +35,10 @@ type sqlCommandMock struct {
 	sqlResult  *sqlmock.Rows
 }
 
-func setUpContext(body *bytes.Buffer) (echo.Context, *httptest.ResponseRecorder) {
+func setUpContext(body io.Reader) (echo.Context, *httptest.ResponseRecorder) {
 	rec := httptest.NewRecorder()
 
-	req := httptest.NewRequest(http.MethodPost, "/expense", body)
+	req := httptest.NewRequest(http.MethodPost, "/", body)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", os.Getenv("TOKEN"))
 
@@ -90,6 +91,54 @@ func TestCreateExpense(t *testing.T) {
 	assert.Nil(t, err)
 	assert.EqualValues(t, http.StatusCreated, rec.Code)
 	assert.NotEqual(t, seed.ID, ex.ID)
+	assert.Equal(t, seed.Title, ex.Title)
+	assert.Equal(t, seed.Amount, ex.Amount)
+	assert.Equal(t, seed.Note, ex.Note)
+	assert.Equal(t, seed.Tags, ex.Tags)
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestGetExpenseByID(t *testing.T) {
+	mock, closeDB := InitMockDB(t)
+	defer closeDB()
+
+	var seed = Expense{
+		ID:     "1",
+		Title:  "strawberry smoothie C++",
+		Amount: 79,
+		Note:   "night market promotion discount 10 bath",
+		Tags:   []string{"food", "beverage"},
+	}
+
+	sqlGet := sqlCommandMock{
+		sqlCommand: "SELECT * FROM expenses WHERE id = $1",
+		sqlResult:  sqlmock.NewRows([]string{"id", "title", "amount", "note", "tags"}).AddRow(seed.ID, seed.Title, seed.Amount, seed.Note, pq.Array(seed.Tags)),
+	}
+
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGet.sqlCommand)).
+		WithArgs(seed.ID).
+		WillReturnRows(sqlGet.sqlResult)
+
+	// ----------------------------
+
+	c, rec := setUpContext(nil)
+	c.SetParamNames("id")
+	c.SetParamValues("1")
+	err := GetExpenseByID(c)
+
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	ex := Expense{}
+	err = json.NewDecoder(rec.Body).Decode(&ex)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, rec.Code)
+	assert.Equal(t, seed.ID, ex.ID)
 	assert.Equal(t, seed.Title, ex.Title)
 	assert.Equal(t, seed.Amount, ex.Amount)
 	assert.Equal(t, seed.Note, ex.Note)
