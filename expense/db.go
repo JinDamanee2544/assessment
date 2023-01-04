@@ -41,3 +41,7 @@ func InitDB() {
 		log.Fatal("Can't create table", err)
 	}
 }
+
+func setMockDB(mockDB DB) {
+	db = mockDB
+}
