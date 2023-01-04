@@ -1,6 +1,7 @@
 package expense
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -72,11 +73,15 @@ func GetExpenseByID(c echo.Context) error {
 
 	e := Expense{}
 	err := row.Scan(&e.ID, &e.Title, &e.Amount, &e.Note, pq.Array(&e.Tags))
-	if err != nil {
+
+	switch err {
+	case sql.ErrNoRows:
+		return c.JSON(http.StatusNotFound, Error{Message: "Expense not found"})
+	case nil:
+		return c.JSON(http.StatusOK, e)
+	default:
 		return c.JSON(http.StatusInternalServerError, Error{Message: err.Error()})
 	}
-
-	return c.JSON(http.StatusOK, e)
 }
 
 func UpdateExpenseByID(c echo.Context) error {
@@ -91,11 +96,15 @@ func UpdateExpenseByID(c echo.Context) error {
 	row := db.QueryRow("UPDATE expenses SET title = $1, amount = $2, note = $3, tags = $4 WHERE id = $5 RETURNING id", e.Title, e.Amount, e.Note, pq.Array(&e.Tags), id)
 
 	err = row.Scan(&e.ID)
-	if err != nil {
+
+	switch err {
+	case sql.ErrNoRows:
+		return c.JSON(http.StatusNotFound, Error{Message: "Expense not found"})
+	case nil:
+		return c.JSON(http.StatusOK, e)
+	default:
 		return c.JSON(http.StatusInternalServerError, Error{Message: err.Error()})
 	}
-
-	return c.JSON(http.StatusOK, e)
 }
 
 // For testing purpose
