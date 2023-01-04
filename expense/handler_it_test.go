@@ -29,7 +29,6 @@ func uri(paths ...string) string {
 
 	url := append([]string{host}, paths...)
 	return strings.Join(url, "/")
-
 }
 
 func request(method, url string, body io.Reader) *Response {
@@ -148,19 +147,29 @@ func TestITUpdateExpenseByID(t *testing.T) {
 }
 
 func TestGetAllExpenses(t *testing.T) {
-	insertE := seedExpense()
+	checkRes := request(http.MethodGet, uri("expenses"), nil)
+
+	// Check former expenses length (offset)
+	formerEx := []Expense{}
+	err := checkRes.Decode(&formerEx)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, checkRes.StatusCode)
+	formerLen := len(formerEx)
+
+	insertE, deleteSeed := seedExpenseIT(t)
+	defer deleteSeed()
+
+	insertE2, deleteSeed2 := seedExpenseIT(t)
+	defer deleteSeed2()
 
 	res := request(http.MethodGet, uri("expenses"), nil)
 
 	e := []Expense{}
-	err := res.Decode(&e)
+	err = res.Decode(&e)
 
 	assert.Nil(t, err)
 	assert.EqualValues(t, http.StatusOK, res.StatusCode)
-	assert.EqualValues(t, 1, len(e))
-	assert.EqualValues(t, insertE.ID, e[0].ID)
-	assert.EqualValues(t, insertE.Title, e[0].Title)
-	assert.EqualValues(t, insertE.Amount, e[0].Amount)
-	assert.EqualValues(t, insertE.Note, e[0].Note)
-	assert.EqualValues(t, insertE.Tags, e[0].Tags)
+	assert.EqualValues(t, formerLen+2, len(e))
+	assert.Contains(t, e, *insertE)
+	assert.Contains(t, e, *insertE2)
 }

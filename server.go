@@ -47,6 +47,9 @@ func main() {
 	e.GET("/expenses/:id", expense.GetExpenseByID)
 	e.PUT("/expenses/:id", expense.UpdateExpenseByID)
 
+	// For testing purpose
+	// e.DELETE("/expenses/:id", expense.DeleteExpenseByID)
+
 	// Start server
 	if os.Getenv("PORT") == "" {
 		log.Fatal("$PORT must be set")
