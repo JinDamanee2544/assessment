@@ -33,6 +33,7 @@ func CreateExpense(c echo.Context) error {
 
 	row := db.QueryRow("INSERT INTO expenses (title, amount, note, tags) VALUES ($1, $2, $3, $4) RETURNING id", e.Title, e.Amount, e.Note, pq.Array(&e.Tags))
 	err = row.Scan(&e.ID)
+	_ = row
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Error{Message: err.Error()})
