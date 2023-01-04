@@ -46,6 +46,7 @@ func main() {
 	e.GET("/expenses", expense.GetAllExpense)
 	e.GET("/expenses/:id", expense.GetExpenseByID)
 	e.PUT("/expenses/:id", expense.UpdateExpenseByID)
+	e.DELETE("/expenses/:id", expense.DeleteExpenseByID)
 
 	// Start server
 	if os.Getenv("PORT") == "" {
