@@ -1,10 +1,14 @@
+//go:build integration
+
 package expense
 
 import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 
@@ -33,12 +37,11 @@ func request(method, url string, body io.Reader) *Response {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// token := os.Getenv("TOKEN")
-	// if token == "" {
-	// 	log.Fatal("TOKEN is not set")
-	// }
-	// req.Header.Set("Authorization", token)
-	req.Header.Set("Authorization", "November 10, 2009")
+	token := os.Getenv("TOKEN")
+	if token == "" {
+		log.Fatal("TOKEN is not set")
+	}
+	req.Header.Set("Authorization", token)
 
 	client := &http.Client{}
 	res, err := client.Do(req)
@@ -95,6 +98,10 @@ func TestITPostExpense(t *testing.T) {
 	assert.EqualValues(t, 79, e.Amount)
 	assert.EqualValues(t, "night market promotion discount 10 bath", e.Note)
 	assert.EqualValues(t, []string{"food", "beverage"}, e.Tags)
+
+	// clean up
+	res = request(http.MethodDelete, uri("expenses", e.ID), nil)
+	assert.EqualValues(t, http.StatusOK, res.StatusCode)
 }
 
 func TestITPostExpenseNoBody(t *testing.T) {
