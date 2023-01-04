@@ -97,3 +97,15 @@ func UpdateExpenseByID(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, e)
 }
+
+// For testing purpose
+func DeleteExpenseByID(c echo.Context) error {
+	id := c.Param("id")
+
+	_, err := db.Exec("DELETE FROM expenses WHERE id = $1", id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}

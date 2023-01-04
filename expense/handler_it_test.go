@@ -40,7 +40,7 @@ func request(method, url string, body io.Reader) *Response {
 	if token == "" {
 		log.Fatal("TOKEN is not set")
 	}
-	req.Header.Set("Authorization", os.Getenv("TOKEN"))
+	req.Header.Set("Authorization", token)
 
 	client := &http.Client{}
 	res, err := client.Do(req)
@@ -55,7 +55,7 @@ func (r *Response) Decode(v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
-func seedExpense() *Expense {
+func seedExpenseIT(t *testing.T) (*Expense, func()) {
 	body := bytes.NewBufferString(`{
 		"title": "strawberry smoothie",
 		"amount": 89,
@@ -69,7 +69,12 @@ func seedExpense() *Expense {
 	if err != nil {
 		panic(err)
 	}
-	return &e
+
+	deleteSeed := func() {
+		res := request(http.MethodDelete, uri("expenses", e.ID), nil)
+		assert.EqualValues(t, http.StatusOK, res.StatusCode)
+	}
+	return &e, deleteSeed
 }
 
 func TestITPostExpense(t *testing.T) {
@@ -92,6 +97,10 @@ func TestITPostExpense(t *testing.T) {
 	assert.EqualValues(t, 79, e.Amount)
 	assert.EqualValues(t, "night market promotion discount 10 bath", e.Note)
 	assert.EqualValues(t, []string{"food", "beverage"}, e.Tags)
+
+	// clean up
+	res = request(http.MethodDelete, uri("expenses", e.ID), nil)
+	assert.EqualValues(t, http.StatusOK, res.StatusCode)
 }
 
 func TestITPostExpenseNoBody(t *testing.T) {
@@ -106,7 +115,8 @@ func TestITPostExpenseNoBody(t *testing.T) {
 }
 
 func TestITGetExpenseByID(t *testing.T) {
-	insertE := seedExpense()
+	insertE, deleteSeed := seedExpenseIT(t)
+	defer deleteSeed()
 
 	res := request(http.MethodGet, uri("expenses", insertE.ID), nil)
 
@@ -130,7 +140,8 @@ func TestITUpdateExpenseByID(t *testing.T) {
 		"tags": ["beverage"]
 	}`)
 
-	insertE := seedExpense()
+	insertE, deleteSeed := seedExpenseIT(t)
+	defer deleteSeed()
 
 	res := request(http.MethodPut, uri("expenses", insertE.ID), body)
 
