@@ -8,12 +8,17 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go test -v
 
 RUN go build -o ./out/go-app .
+
+# ----------------------------------------------
 
 FROM alpine:3.16.2
 
 COPY --from=build-base /app/out/go-app /app/go-app
 
 CMD ["/app/go-app"]
+
+
+
+

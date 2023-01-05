@@ -1,14 +1,33 @@
-//go:build e2e
+//go:build integration
 
 package expense
 
 import (
 	"bytes"
+	"log"
 	"net/http"
+	"os"
 	"testing"
 
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+func validateToken(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		token := c.Request().Header.Get("Authorization")
+
+		correctToken := os.Getenv("TOKEN")
+		if correctToken == "" {
+			log.Fatal("TOKEN is not set")
+		}
+
+		if token != os.Getenv("TOKEN") {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+		}
+		return next(c)
+	}
+}
 
 func seedExpenseIT(t *testing.T) (*Expense, func()) {
 	body := bytes.NewBufferString(`{
