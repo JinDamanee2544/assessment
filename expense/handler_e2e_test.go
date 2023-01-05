@@ -77,7 +77,7 @@ func seedExpenseIT(t *testing.T) (*Expense, func()) {
 	return &e, deleteSeed
 }
 
-func TestITPostExpense(t *testing.T) {
+func TestE2EPostExpense(t *testing.T) {
 	body := bytes.NewBufferString(`{
 		"id": "1",
 		"title": "strawberry smoothie",
@@ -103,7 +103,7 @@ func TestITPostExpense(t *testing.T) {
 	assert.EqualValues(t, http.StatusOK, res.StatusCode)
 }
 
-func TestITPostExpenseNoBody(t *testing.T) {
+func TestE2EPostExpenseNoBody(t *testing.T) {
 	body := bytes.NewBufferString("")
 
 	e := Expense{}
@@ -114,7 +114,7 @@ func TestITPostExpenseNoBody(t *testing.T) {
 	assert.EqualValues(t, http.StatusBadRequest, res.StatusCode)
 }
 
-func TestITGetExpenseByID(t *testing.T) {
+func TestE2EGetExpenseByID(t *testing.T) {
 	insertE, deleteSeed := seedExpenseIT(t)
 	defer deleteSeed()
 
@@ -132,7 +132,7 @@ func TestITGetExpenseByID(t *testing.T) {
 	assert.EqualValues(t, insertE.Tags, e.Tags)
 }
 
-func TestITUpdateExpenseByID(t *testing.T) {
+func TestE2EUpdateExpenseByID(t *testing.T) {
 	body := bytes.NewBufferString(`{
 		"title": "apple smoothie",
 		"amount": 89,
@@ -157,7 +157,7 @@ func TestITUpdateExpenseByID(t *testing.T) {
 	assert.EqualValues(t, []string{"beverage"}, editedEx.Tags)
 }
 
-func TestGetAllExpenses(t *testing.T) {
+func TestE2EGetAllExpenses(t *testing.T) {
 	checkRes := request(http.MethodGet, uri("expenses"), nil)
 
 	// Check former expenses length (offset)
