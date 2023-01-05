@@ -3,14 +3,14 @@ It not able to Integration Test in docker-compose  \
 Please do it manually , So Sorry ToT
 
 ## Unit Test
-```go
+```bash
   envSetter.cmd
   testUnit.cmd
 ```
 
 ## Integration Test
 Open server in another terminal, then
-```go
+```bash
   envSetter.cmd
   IntegrationTest.cmd
 ```
