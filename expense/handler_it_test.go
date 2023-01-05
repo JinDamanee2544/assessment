@@ -4,7 +4,6 @@ package expense
 
 import (
 	"bytes"
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -47,7 +46,7 @@ func initServer() func() {
 	e.Logger.Fatal(e.Start(os.Getenv("PORT")))
 
 	shutdown := func() {
-		e.Logger.Fatal(e.Shutdown(context.Background()))
+		e.Logger.Fatal(e.Shutdown)
 	}
 
 	return shutdown
@@ -65,7 +64,7 @@ func TestPostExpense(t *testing.T) {
 		"note": "night market promotion discount 10 bath", 
 		"tags": ["food", "beverage"]
 		}`)
-	res := request("POST", "http://localhost:2565/expenses", body)
+	res := request("POST", uri("expenses"), body)
 	err := res.Decode(&e)
 
 	assert.Nil(t, err)
