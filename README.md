@@ -1,3 +1,24 @@
+# P.S. 
+It not able to Integration Test in docker-compose  \
+Please do it manually , So Sorry ToT
+
+## Unit Test
+```go
+  envSetter.cmd
+  testUnit.cmd
+```
+
+## Integration Test
+Open server in another terminal, then
+```go
+  envSetter.cmd
+  IntegrationTest.cmd
+```
+
+If you are on Mac/Linux just open .cmd to see the commands
+    
+
+
 # Prerequisites
 * โปรเจคตั้งต้นคือ[โปรเจคนี้](https://github.com/KKGo-Software-engineering/assessment)
 * กำหนดให้ส่งลิ้งค์คำตอบคือ github repository ที่เก็บโค้ดของคุณ `https://github.com/<your github name>/assessment`
