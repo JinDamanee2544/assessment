@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/JinDamanee2544/assessment/auth"
 	"github.com/labstack/echo/v4"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
@@ -43,6 +44,7 @@ func setUpContext(body io.Reader) (echo.Context, *httptest.ResponseRecorder) {
 	req.Header.Set("Authorization", os.Getenv("TOKEN"))
 
 	e := echo.New()
+	e.Use(auth.ValidateToken)
 	c := e.NewContext(req, rec)
 
 	return c, rec
@@ -96,6 +98,52 @@ func seedExpense(t *testing.T, mock sqlmock.Sqlmock) *Expense {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 	return &ex
+}
+
+func TestCreateExpenseNoToken(t *testing.T) {
+	mock, closeDB := InitMockDB(t)
+	defer closeDB()
+
+	var seed = Expense{
+		Title:  "strawberry smoothie C++",
+		Amount: 79,
+		Note:   "night market promotion discount 10 bath",
+		Tags:   []string{"food", "beverage"},
+	}
+
+	sqlCreate := sqlCommandMock{
+		sqlCommand: "INSERT INTO expenses (title, amount, note, tags) VALUES ($1, $2, $3, $4) RETURNING id",
+		sqlResult:  sqlmock.NewRows([]string{"id"}).AddRow(1),
+	}
+
+	mock.ExpectQuery(regexp.QuoteMeta(sqlCreate.sqlCommand)).
+		WithArgs(seed.Title, seed.Amount, seed.Note, pq.Array(seed.Tags)).
+		WillReturnRows(sqlCreate.sqlResult)
+
+	// ----------------------------
+
+	body := bytes.NewBufferString(
+		`{
+		"title": "strawberry smoothie C++",
+		"amount": 79,
+		"note": "night market promotion discount 10 bath",
+		"tags": ["food", "beverage"]
+	}`)
+
+	rec := httptest.NewRecorder()
+
+	req := httptest.NewRequest(http.MethodPost, "/", body)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	e := echo.New()
+	e.Use(auth.ValidateToken)
+	e.POST("/", CreateExpense)
+
+	e.ServeHTTP(rec, req)
+
+	// assert.Nil(t, err)
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
 
 func TestCreateExpense(t *testing.T) {

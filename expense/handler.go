@@ -11,7 +11,7 @@ import (
 type Expense struct {
 	ID     string   `json:"id"`
 	Title  string   `json:"title"`
-	Amount int      `json:"amount"`
+	Amount float32  `json:"amount"`
 	Note   string   `json:"note"`
 	Tags   []string `json:"tags"`
 }

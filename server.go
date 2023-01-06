@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -11,24 +10,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"github.com/JinDamanee2544/assessment/auth"
 	"github.com/JinDamanee2544/assessment/expense"
 )
-
-func validateToken(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		token := c.Request().Header.Get("Authorization")
-
-		correctToken := os.Getenv("TOKEN")
-		if correctToken == "" {
-			log.Fatal("TOKEN is not set")
-		}
-
-		if token != os.Getenv("TOKEN") {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
-		}
-		return next(c)
-	}
-}
 
 func main() {
 
@@ -39,7 +23,7 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(validateToken)
+	e.Use(auth.ValidateToken)
 
 	// Routes
 	e.POST("/expenses", expense.CreateExpense)
