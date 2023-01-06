@@ -1,3 +1,5 @@
+//go:build unit
+
 package expense
 
 import (
@@ -100,7 +102,7 @@ func seedExpense(t *testing.T, mock sqlmock.Sqlmock) *Expense {
 	return &ex
 }
 
-func TestCreateExpenseNoToken(t *testing.T) {
+func TestUnitCreateExpenseNoToken(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
 	defer closeDB()
 
@@ -146,7 +148,7 @@ func TestCreateExpenseNoToken(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
 
-func TestCreateExpense(t *testing.T) {
+func TestUnitCreateExpense(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
 	defer closeDB()
 
@@ -199,7 +201,7 @@ func TestCreateExpense(t *testing.T) {
 	}
 }
 
-func TestGetExpenseByID(t *testing.T) {
+func TestUnitGetExpenseByID(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
 	defer closeDB()
 
@@ -250,7 +252,7 @@ func TestGetExpenseByID(t *testing.T) {
 	}
 }
 
-func TestUpdateExpenseByID(t *testing.T) {
+func TestUnitUpdateExpenseByID(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
 	defer closeDB()
 
@@ -307,7 +309,7 @@ func TestUpdateExpenseByID(t *testing.T) {
 	}
 }
 
-func TestGetAllExpense(t *testing.T) {
+func TestUnitGetAllExpense(t *testing.T) {
 	mock, closeDB := InitMockDB(t)
 	defer closeDB()
 
